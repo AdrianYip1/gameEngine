@@ -6,21 +6,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-add_subdirectory(gameEngine/libraries/enginemath)
+add_subdirectory(libraries/enginemath)
 
 add_executable(gameEngine
-    gameEngine/main.cpp
-    gameEngine/glad.c
+    main.cpp
+    glad.c
 )
 
 target_include_directories(gameEngine PRIVATE
-    ${CMAKE_SOURCE_DIR}/gameEngine/libraries/include
+    ${CMAKE_SOURCE_DIR}/libraries/include
 )
 
 if (WIN32)
     target_link_libraries(gameEngine PRIVATE
         opengl32
-        ${CMAKE_SOURCE_DIR}/gameEngine/libraries/lib/glfw3.lib
+        ${CMAKE_SOURCE_DIR}/libraries/lib/glfw3.lib
         enginemath::enginemath
     )
 elseif(UNIX)

@@ -1,4 +1,20 @@
-build-windows/
-build-wsl/
-build-wsl/
-build-windows/
+# Build directories
+build-*/
+build/
+out/
+x64/
+bin/
+*.log
+*.tlog/
+
+# IDE
+.vs/
+CMakeSettings.json
+CppProperties.json
+
+# Libraries - Windows binaries are platform-specific
+# libraries/lib/glfw3.lib
+
+# OS
+.DS_Store
+Thumbs.db
