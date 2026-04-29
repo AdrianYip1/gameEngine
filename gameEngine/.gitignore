@@ -1,0 +1,7 @@
+.vs/
+build/
+x64/
+*.log
+*.tlog/
+CMakeSettings.json
+CppProperties.json
