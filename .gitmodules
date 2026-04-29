@@ -1,0 +1,3 @@
+[submodule "gameEngine/libraries/enginemath"]
+	path = gameEngine/libraries/enginemath
+	url = https://github.com/AdrianYip1/enginemath.git
