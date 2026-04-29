@@ -4,7 +4,8 @@ project(gameEngine)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Add enginemath submodule
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 add_subdirectory(gameEngine/libraries/enginemath)
 
 add_executable(gameEngine
@@ -13,14 +14,22 @@ add_executable(gameEngine
 )
 
 target_include_directories(gameEngine PRIVATE
-    gameEngine/libraries/include
-    gameEngine/libraries/include/glad
-    gameEngine/libraries/include/GLFW
-    gameEngine/libraries/include/KHR
+    ${CMAKE_SOURCE_DIR}/gameEngine/libraries/include
 )
 
-target_link_libraries(gameEngine PRIVATE
-    ${CMAKE_SOURCE_DIR}/gameEngine/libraries/lib/glfw3.lib
-    enginemath
-    opengl32
-)
+if (WIN32)
+    target_link_libraries(gameEngine PRIVATE
+        opengl32
+        ${CMAKE_SOURCE_DIR}/gameEngine/libraries/lib/glfw3.lib
+        enginemath::enginemath
+    )
+elseif(UNIX)
+    find_package(OpenGL REQUIRED)
+    find_package(glfw3 REQUIRED)
+
+    target_link_libraries(gameEngine PRIVATE
+        OpenGL::GL
+        glfw
+        enginemath::enginemath
+    )
+endif()
