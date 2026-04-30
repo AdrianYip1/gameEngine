@@ -59,7 +59,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(2560, 1440, "OpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(500, 500, "OpenGL", NULL, NULL);
     glfwMakeContextCurrent(window);
 
     // glad
@@ -68,7 +68,7 @@ int main() {
         return -1;
     }
 
-    glViewport(0, 0, 2560, 1440);
+    glViewport(0, 0, 500, 500);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
