@@ -2,47 +2,36 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <enginemath/vec3.hpp>
+#include <shader/shader.hpp>
 
 const char *vertexShaderSource = "#version 330 core\n"
 	"layout (location = 0) in vec3 aPos;\n"
+    "layout (location = 1) in vec3 aColor;\n"
+    "uniform vec4 horizOffset;\n"
+    "out vec3 ourColor;\n"
 	"void main()\n"
 	"{\n"
-	" gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+	" gl_Position = vec4(aPos.x, -aPos.y, aPos.z, 1.0) + horizOffset;\n"
+    " ourColor = aColor;"
 	"}\0";
 
 
-const char *fragmentShaderSource1 = "#version 330 core\n"
+const char *fragmentShaderSource = "#version 330 core\n"
 	"out vec4 FragColor;\n"
+    "in vec3 ourColor;\n"
 	"void main()\n"
 	"{\n"
-	" FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-	"}\0";
-
-const char *fragmentShaderSource2 = "#version 330 core\n"
-	"out vec4 FragColor;\n"
-	"void main()\n"
-	"{\n"
-	" FragColor = vec4(0.2f, 0.2f, 0.7f, 1.0f);\n"
+	" FragColor = vec4(ourColor, 1.0f);\n"
 	"}\0";
 
 float vertices[] = {
-    0.0f, 0.0f, 0.0f, 
-    0.3f, 0.0f, 0.0f, 
-    0.3f, 0.3f, 0.0f, 
-    0.0f, 0.3f, 0.0f,
-    -0.3f, 0.0f, 0.0f,
-    0.6f, 0.3f, 0.0f
+// positions // colors
+0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
+-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
+0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f // top
 };
 
-unsigned int indices_1[] = {
-    4, 0, 3,
-    0, 1, 2
-};
 
-unsigned int indices_2[] = {
-    0, 2, 3,
-    1, 2, 5
-};
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int  height) { 
     glViewport(0, 0, width, height); 
@@ -74,100 +63,79 @@ int main() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     //Exercise 1: draw 2 triangles next to each other using glDrawArrays by 
     // adding more vertices
 
-    unsigned int VBO1, VBO2, VAO1, VAO2, EBO1, EBO2;
-    glGenVertexArrays(1, &VAO1);
-    glGenVertexArrays(1, &VAO2);
-
-    glGenBuffers(1, &VBO1);
-    glGenBuffers(1, &VBO2);
-
-    glGenBuffers(1, &EBO1);
-    glGenBuffers(1, &EBO2);
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
 
     //VAO
-    glBindVertexArray(VAO1);
+    glBindVertexArray(VAO);
 
     //VBO
-    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    //EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_1), indices_1, GL_STATIC_DRAW);
 
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) 0);
     glEnableVertexAttribArray(0);
 
-    //VAO
-    glBindVertexArray(VAO2);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
-    //VBO
-    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    //EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_2), indices_2, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
-    glEnableVertexAttribArray(0);
     
-    //Shaders
-    unsigned int vertexShader, fragmentShader1, shaderProgram1, fragmentShader2, shaderProgram2;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    fragmentShader1 = glCreateShader(GL_FRAGMENT_SHADER);
-    shaderProgram1 = glCreateProgram();
-    fragmentShader2 = glCreateShader(GL_FRAGMENT_SHADER);
-    shaderProgram2 = glCreateProgram();
 
-    //Vertex Shader
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
+	//Vertex Shader object
+	unsigned int vertexShader;
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glCompileShader(vertexShader);
 
-    //Fragment Shader
-    glShaderSource(fragmentShader1, 1, &fragmentShaderSource1, NULL);
-    glCompileShader(fragmentShader1);
-
-    glShaderSource(fragmentShader2, 1, &fragmentShaderSource2, NULL);
-    glCompileShader(fragmentShader2);
-
-    //Link Shaders
-    glAttachShader(shaderProgram1, vertexShader);
-    glAttachShader(shaderProgram1, fragmentShader1);
-    glLinkProgram(shaderProgram1);
-
-    glAttachShader(shaderProgram2, vertexShader);
-    glAttachShader(shaderProgram2, fragmentShader2);
-    glLinkProgram(shaderProgram2);
+	// Fragment Shader Object
+	unsigned int fragmentShader;
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+	glCompileShader(fragmentShader);
 
 
-    //Delete Shader Objects
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader1);
-    glDeleteShader(fragmentShader2);
+	//Linking the vertex and fragment shaders together
+	unsigned int shaderProgram;
+	shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
+    
+
+
+	//Delete shaders
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+
+    float offset = 0.0f;
+    float direction = 0.0001f;
 
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
-        processInput(window);
+		processInput(window);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glUseProgram(shaderProgram);
+        offset += direction;
+        if (offset > 0.2f || offset < -0.2f)
+            direction = -direction;
 
-        glUseProgram(shaderProgram2);
-        glBindVertexArray(VAO2);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        int offsetLocation = glGetUniformLocation(shaderProgram, "horizOffset");
+        glUniform4f(offsetLocation, offset, 0.0f, 0.0f, 0.0f);
 
-        glUseProgram(shaderProgram1);
-        glBindVertexArray(VAO1);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(0);
 
-
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+		glfwSwapBuffers(window);
+		glfwPollEvents();
     }
 	
     glfwTerminate();
