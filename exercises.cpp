@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <enginemath/vec3.hpp>
 #include <shader/shader.hpp>
+#include "stb_image.h"
 
 const char *vertexShaderSource = "#version 330 core\n"
 	"layout (location = 0) in vec3 aPos;\n"
