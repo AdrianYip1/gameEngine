@@ -90,7 +90,7 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height, nrChannels;
-	unsigned char *data = stbi_load("/home/adrian/projects/gameEngine/textures/container.jpg", &width, &height, &nrChannels, 0);
+	unsigned char *data = stbi_load("textures/container.jpg", &width, &height, &nrChannels, 0);
 
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -109,7 +109,7 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	data = stbi_load("/home/adrian/projects/gameEngine/textures/awesomeface.png", &width, &height, &nrChannels, 0);
+	data = stbi_load("textures/awesomeface.png", &width, &height, &nrChannels, 0);
 
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -121,7 +121,7 @@ int main() {
 	stbi_image_free(data); 
 
 	//Shader
-	Shader shader("/home/adrian/projects/gameEngine/shaders/basic.vert", "/home/adrian/projects/gameEngine/shaders/basic.frag");
+	Shader shader("shaders/basic.vert", "shaders/basic.frag");
 	shader.use();
 	shader.setInt("texture1", 0);
 	shader.setInt("texture2", 1);
