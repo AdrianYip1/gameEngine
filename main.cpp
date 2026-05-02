@@ -2,6 +2,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <enginemath/vec3.hpp>
+#include <enginemath/vec4.hpp>
+#include <enginemath/mat4.hpp>
+#include <enginemath/mathutils.hpp>
 #include <shader/shader.hpp>
 #include "stb_image.h"
 
@@ -126,9 +129,23 @@ int main() {
 	shader.setInt("texture1", 0);
 	shader.setInt("texture2", 1);
 
+	int success;
+glGetProgramiv(shader.ID, GL_LINK_STATUS, &success);
+if (!success) {
+    char infoLog[512];
+    glGetProgramInfoLog(shader.ID, 512, NULL, infoLog);
+    std::cout << "SHADER LINK ERROR: " << infoLog << std::endl;
+}
+
 	
 
 	float smileyVisibility = 0.5;
+
+	enginemath::Mat4 trans = enginemath::Mat4::rotateZ(enginemath::toRad(90.0f)) * enginemath::Mat4::scaleM(0.5f, 0.5f, 0.5f);
+	unsigned int transformLoc = glGetUniformLocation(shader.ID, "transform");
+	std::cout << "transformLoc: " << transformLoc << std::endl;
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, trans.data());
+
 
 	// Render Loop
 	while (!glfwWindowShouldClose(window)) {

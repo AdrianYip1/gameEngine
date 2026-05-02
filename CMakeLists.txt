@@ -18,6 +18,7 @@ add_executable(gameEngine
 file(COPY textures DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY shaders  DESTINATION ${CMAKE_BINARY_DIR})
 
+
 target_include_directories(gameEngine PRIVATE
     ${CMAKE_SOURCE_DIR}/libraries/include
 )
