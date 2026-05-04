@@ -8,6 +8,13 @@
 #include <shader/shader.hpp>
 #include "stb_image.h"
 
+enginemath::Vec3 cameraPos = enginemath::Vec3(0.0f, 0.0f, 3.0f);
+enginemath::Vec3 cameraFront = enginemath::Vec3(0.0f, 0.0f, -1.0f);
+enginemath::Vec3 cameraUp = enginemath::Vec3(0.0f, 1.0f, 0.0f);
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 };
@@ -26,12 +33,59 @@ float processInput(GLFWwindow* window) {
 	return 0.0f;
 };
 
-float vertices[] = {
-    // positions          // colors           // texture coords
-    0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-    0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+void movementInput(GLFWwindow *window) {
+	const float cameraSpeed = 2.5f * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		cameraPos += cameraSpeed * cameraFront;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		cameraPos -= cameraSpeed * cameraFront;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		cameraPos += cameraSpeed * cameraUp.cross(cameraFront).normalized();
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		cameraPos -= cameraSpeed * cameraUp.cross(cameraFront).normalized();
+	}
+}
+
+float vertices[] = { // aPos and TexCoord
+-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+-0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+-0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+-0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+-0.5f, 0.5f, -0.5f, 0.0f, 1.0f
 };
 
 unsigned int indices[] = {
@@ -44,9 +98,9 @@ int main() {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* window = glfwCreateWindow(1000, 1000, "OpenGL Main", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL Main", NULL, NULL);
 	glfwMakeContextCurrent(window);
 
 	// Load Glad
@@ -55,11 +109,12 @@ int main() {
 		return -1;
 	}
 
-	glViewport(0, 0, 1000, 1000);
+	glViewport(0, 0, 800, 600);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
 
 	stbi_set_flip_vertically_on_load(true);
 
@@ -74,15 +129,13 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
 
 	unsigned int texture1;
 	glGenTextures(1, &texture1);
@@ -130,34 +183,57 @@ int main() {
 	shader.setInt("texture2", 1);
 
 	int success;
-glGetProgramiv(shader.ID, GL_LINK_STATUS, &success);
-if (!success) {
-    char infoLog[512];
-    glGetProgramInfoLog(shader.ID, 512, NULL, infoLog);
-    std::cout << "SHADER LINK ERROR: " << infoLog << std::endl;
-}
-
-	
+	glGetProgramiv(shader.ID, GL_LINK_STATUS, &success);
+	if (!success) {
+		char infoLog[512];
+		glGetProgramInfoLog(shader.ID, 512, NULL, infoLog);
+		std::cout << "SHADER LINK ERROR: " << infoLog << std::endl;
+	}
 
 	float smileyVisibility = 0.5;
+	unsigned int modelLoc = glGetUniformLocation(shader.ID, "modelM");
+	unsigned int viewLoc = glGetUniformLocation(shader.ID, "viewM");
+	unsigned int projectionLoc = glGetUniformLocation(shader.ID, "projectionM");
 
-	enginemath::Mat4 trans = enginemath::Mat4::rotateZ(enginemath::toRad(90.0f)) * enginemath::Mat4::scaleM(0.5f, 0.5f, 0.5f);
-	unsigned int transformLoc = glGetUniformLocation(shader.ID, "transform");
-	std::cout << "transformLoc: " << transformLoc << std::endl;
-	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, trans.data());
+	enginemath::Vec3 cubePositions[] = {
+		enginemath::Vec3(0.0f, 0.0f, 0.0f),
+		enginemath::Vec3(2.0f, 5.0f, -15.0f),
+		enginemath::Vec3(-1.5f, -2.2f, -2.5f),
+		enginemath::Vec3(-3.8f, -2.0f, -12.3f),
+		enginemath::Vec3( 2.4f, -0.4f, -3.5f),
+		enginemath::Vec3(-1.7f, 3.0f, -7.5f),
+		enginemath::Vec3( 1.3f, -2.0f, -2.5f),
+		enginemath::Vec3( 1.5f, 2.0f, -2.5f),
+		enginemath::Vec3( 1.5f, 0.2f, -1.5f),
+		enginemath::Vec3(-1.3f, 1.0f, -1.5f)
+	};
 
 
 	// Render Loop
 	while (!glfwWindowShouldClose(window)) {
+
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		movementInput(window);
 		smileyVisibility += processInput(window);
 		if (smileyVisibility < 0.0) smileyVisibility = 0.0;
 		if (smileyVisibility > 1.0) smileyVisibility = 1.0;
 
 
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shader.use();
 		shader.setFloat("faceVisibility", smileyVisibility);
+
+		enginemath::Mat4 projectionM = enginemath::Mat4::projectionM(enginemath::toRad(30.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+		enginemath::Mat4 viewM = enginemath::Mat4::lookAtM(cameraPos, cameraPos + cameraFront, cameraUp);
+	
+
+
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projectionM.data());
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, viewM.data());
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
@@ -165,9 +241,17 @@ if (!success) {
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
 		glBindVertexArray(VAO);
-		
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+
+		for (unsigned int i = 0; i < 10; i++) {
+			enginemath::Mat4 modelM = enginemath::Mat4::translationM(cubePositions[i]);
+
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, modelM.data());
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		}
+		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
