@@ -10,6 +10,9 @@ add_subdirectory(libraries/enginemath)
 
 add_executable(gameEngine
     libraries/include/shader/shader.cpp
+    libraries/include/mesh/mesh.cpp
+    libraries/include/render/render.cpp
+    libraries/include/texture/texture.cpp
     stb_image.cpp
     main.cpp
     glad.c

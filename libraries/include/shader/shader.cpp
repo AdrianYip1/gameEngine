@@ -2,7 +2,7 @@
 
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
-    //1. retrieve vertex/fragment source code from filepath
+    // retrieve vertex/fragment source code from filepath
     std::string vertexCode;
     std::string fragmentCode;
     std::ifstream vShaderFile;
@@ -32,7 +32,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
 
-    //2. compile shaders
+    // compile shaders
 
     unsigned int vertex, fragment;
     int success;
