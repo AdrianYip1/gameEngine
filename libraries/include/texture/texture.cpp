@@ -14,12 +14,7 @@ Texture::Texture(const char* texturePath) { //2d
     unsigned char *data = stbi_load(texturePath, &width, &height, &nrChannels, 0);
 
     const char* dot = strrchr(texturePath, '.');
-    if (!dot) {
-        const char* fileType = "";
-    }
-    else {
-        const char* fileType = dot + 1;
-    }
+    const char* fileType = (dot) ? dot + 1 : "";
 
     if (data) {
         if (strcmp(fileType, "jpg") == 0 || strcmp(fileType, "jpeg") == 0) {
@@ -29,7 +24,7 @@ Texture::Texture(const char* texturePath) { //2d
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         }
         else {
-            std::cout << "TEXTURE NEEDS TO BE .png OR .jpg" std::endl;
+            std::cout << "TEXTURE NEEDS TO BE .png OR .jpg" << std::endl;
         }
         glGenerateMipmap(GL_TEXTURE_2D);
     }

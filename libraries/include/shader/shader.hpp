@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <enginemath/mat4.hpp>
 
 class Shader {
     public:
@@ -19,6 +20,7 @@ class Shader {
     void setBool(const std::string &name, bool value) const;
     void setInt(const std::string &name, int value) const;
     void setFloat(const std::string &name, float value) const;
+    void setMat4(const std::string &name, enginemath::Mat4 matrix) const;
 };
 
 #endif

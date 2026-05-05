@@ -183,44 +183,9 @@ int main() {
 
 	Mesh cube(vertices, 36);
 
-	unsigned int texture1;
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	int width, height, nrChannels;
-	unsigned char *data = stbi_load("textures/container.jpg", &width, &height, &nrChannels, 0);
-
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else {
-		std::cout << "ERROR GENERATING TEXTURE" << std::endl;
-	}
-	stbi_image_free(data); 
-
-	unsigned int texture2;
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	data = stbi_load("textures/awesomeface.png", &width, &height, &nrChannels, 0);
-
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else {
-		std::cout << "ERROR GENERATING TEXTURE" << std::endl;
-	}
-	stbi_image_free(data); 
+	// Texture
+	Texture texture1("textures/container.jpg");
+	Texture texture2("textures/awesomeface.png");
 
 	//Shader
 	Shader shader("shaders/basic.vert", "shaders/basic.frag");
@@ -228,18 +193,8 @@ int main() {
 	shader.setInt("texture1", 0);
 	shader.setInt("texture2", 1);
 
-	int success;
-	glGetProgramiv(shader.ID, GL_LINK_STATUS, &success);
-	if (!success) {
-		char infoLog[512];
-		glGetProgramInfoLog(shader.ID, 512, NULL, infoLog);
-		std::cout << "SHADER LINK ERROR: " << infoLog << std::endl;
-	}
-
 	float smileyVisibility = 0.5;
-	unsigned int modelLoc = glGetUniformLocation(shader.ID, "modelM");
-	unsigned int viewLoc = glGetUniformLocation(shader.ID, "viewM");
-	unsigned int projectionLoc = glGetUniformLocation(shader.ID, "projectionM");
+
 
 	enginemath::Vec3 cubePositions[] = {
 		enginemath::Vec3(0.0f, 0.0f, 0.0f),
@@ -258,7 +213,6 @@ int main() {
 	Render renderer;
 	// Render Loop
 	while (!glfwWindowShouldClose(window)) {
-
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -280,25 +234,18 @@ int main() {
 		enginemath::Mat4 viewM = enginemath::Mat4::lookAtM(cameraPos, cameraPos + cameraFront, cameraUp);
 	
 
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projectionM.data());
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, viewM.data());
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
+		texture1.bind(0);
+		texture2.bind(1);
 
 		for (unsigned int i = 0; i < 10; i++) {
 			enginemath::Mat4 modelM = enginemath::Mat4::translationM(cubePositions[i]);
 
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, modelM.data());
-
+			renderer.setPosition(shader, projectionM, viewM, modelM);
 			renderer.draw(cube);
 
 		}
 		
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+		renderer.endFrame(window);
 
 	}
 
