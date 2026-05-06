@@ -5,6 +5,7 @@
 
 struct Vertex {
     enginemath::Vec3 position;
+    enginemath::Vec3 normal;
     enginemath::Vec3 colour;
     enginemath::Vec2 texCoord;
 };

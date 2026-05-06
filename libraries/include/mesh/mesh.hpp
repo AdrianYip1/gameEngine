@@ -8,7 +8,7 @@
 
 class Mesh {
     public:
-    static_assert(sizeof(Vertex) == 8 * sizeof(float), "Vertex struct has unexpected padding!");
+    static_assert(sizeof(Vertex) == 11 * sizeof(float), "Vertex struct has unexpected padding!");
 
         // Constructors
         Mesh(const Vertex* vertices, size_t countV);
