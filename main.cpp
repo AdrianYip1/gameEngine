@@ -10,16 +10,18 @@
 #include <mesh/mesh.hpp>
 #include <texture/texture.hpp>
 #include <mesh/vertex.h>
+#include <camera/camera.hpp>
 #include "stb_image.h"
 
 enginemath::Vec3 cameraPos = enginemath::Vec3(0.0f, 0.0f, 3.0f);
 enginemath::Vec3 cameraFront = enginemath::Vec3(0.0f, 0.0f, -1.0f);
 enginemath::Vec3 cameraUp = enginemath::Vec3(0.0f, 1.0f, 0.0f);
+enginemath::Vec3 cameraAngles(0.0f, -90.0f, 0.0f);
+
+Camera camera;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-float yaw = -90.0f;
-float pitch = 0.0f;
 float lastX = 400.0f;
 float lastY = 300.0f;
 bool firstMouse = true;
@@ -36,18 +38,37 @@ void processInput(GLFWwindow* window) {
 
 void movementInput(GLFWwindow *window) {
 	const float cameraSpeed = 2.5f * deltaTime;
+	const float cameraRotationSpeed = 30.0f * deltaTime;
+
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		cameraPos += cameraSpeed * cameraFront;
+		camera.directionalInput(cameraPos, cameraFront, cameraSpeed);
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		cameraPos -= cameraSpeed * cameraFront;
+		camera.directionalInput(cameraPos, -cameraFront, cameraSpeed);
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		cameraPos -= cameraSpeed * cameraFront.cross(cameraUp).normalized();
+		camera.directionalInput(cameraPos, -cameraFront.cross(cameraUp).normalized(), cameraSpeed);
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		cameraPos += cameraSpeed * cameraFront.cross(cameraUp).normalized();
+		camera.directionalInput(cameraPos, cameraFront.cross(cameraUp).normalized(), cameraSpeed);
 	}
+
+	//Camera Angles
+	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {	
+		cameraAngles.x += cameraRotationSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+		cameraAngles.y -= cameraRotationSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+		cameraAngles.x -= cameraRotationSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+		cameraAngles.y += cameraRotationSpeed;
+	}
+
+	camera.angularInput(cameraFront, cameraAngles);
+
 }
 
 
@@ -144,7 +165,7 @@ int main() {
 	enginemath::Vec3 lightColor(1.0f, 1.0f, 1.0f);
 	lightingShader.setVec3("objectColor", objColor);
 	lightingShader.setVec3("lightColor", lightColor);
-	lightingShader.setVec3("viewPos", cameraPos);
+
 
 	// Texture
 	Texture texture1("textures/container.jpg");
@@ -189,6 +210,7 @@ int main() {
 		cube.bind();
 		lightingShader.use();
 		lightingShader.setVec3("lightPos", lightPos);
+		lightingShader.setVec3("viewPos", cameraPos);
 
 		enginemath::Mat4 modelM = enginemath::Mat4::translationM(cubePositions[0]);
 		renderer.setPosition(lightingShader, projectionM, viewM, modelM);

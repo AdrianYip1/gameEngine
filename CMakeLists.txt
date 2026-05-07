@@ -13,6 +13,7 @@ add_executable(gameEngine
     libraries/include/mesh/mesh.cpp
     libraries/include/render/render.cpp
     libraries/include/texture/texture.cpp
+    libraries/include/camera/camera.cpp
     stb_image.cpp
     main.cpp
     glad.c
