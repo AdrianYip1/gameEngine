@@ -233,6 +233,13 @@ int main() {
         lightingShader.setVec3("spotLight.spotPosition", cameraPos);
         lightingShader.setVec3("spotLight.spotDirection", cameraFront);
         lightingShader.setFloat("spotLight.cutOff", cos(enginemath::toRad(12.5f)));
+        lightingShader.setFloat("spotLight.outerCutOff", cos(enginemath::toRad(15.0f)));
+        lightingShader.setVec3("spotLight.ambient", ambientLight);
+        lightingShader.setVec3("spotLight.diffuse", diffuseLight);
+        lightingShader.setVec3("spotLight.specular", specularLight);
+        lightingShader.setFloat("spotLight.constant", 1.0f);
+        lightingShader.setFloat("spotLight.linear", 0.09f);
+        lightingShader.setFloat("spotLight.quadratic", 0.032f);
 
         lightingShader.setVec3("viewPos", cameraPos);
 
