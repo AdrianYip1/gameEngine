@@ -1,0 +1,5 @@
+/home/adria/projects/gameEngine/CMakeFiles/gameEngine.dir
+/home/adria/projects/gameEngine/CMakeFiles/edit_cache.dir
+/home/adria/projects/gameEngine/CMakeFiles/rebuild_cache.dir
+/home/adria/projects/gameEngine/libraries/enginemath/CMakeFiles/edit_cache.dir
+/home/adria/projects/gameEngine/libraries/enginemath/CMakeFiles/rebuild_cache.dir

@@ -2,145 +2,259 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <enginemath/vec3.hpp>
+#include <enginemath/vec4.hpp>
+#include <enginemath/mat4.hpp>
+#include <enginemath/mathutils.hpp>
 #include <shader/shader.hpp>
+#include <render/render.hpp>
+#include <mesh/mesh.hpp>
+#include <texture/texture.hpp>
+#include <mesh/vertex.h>
+#include <camera/camera.hpp>
 #include "stb_image.h"
 
-const char *vertexShaderSource = "#version 330 core\n"
-	"layout (location = 0) in vec3 aPos;\n"
-    "layout (location = 1) in vec3 aColor;\n"
-    "uniform vec4 horizOffset;\n"
-    "out vec3 ourColor;\n"
-	"void main()\n"
-	"{\n"
-	" gl_Position = vec4(aPos.x, -aPos.y, aPos.z, 1.0) + horizOffset;\n"
-    " ourColor = aColor;"
-	"}\0";
 
+Camera camera;
+enginemath::Vec3 cameraAngles(0.0f, -90.0f, 0.0f);
+enginemath::Vec3 cameraUp(0.0f, 1.0f, 0.0f);
+enginemath::Vec3 cameraFront(0.0f, 0.0f, -1.0f);
+enginemath::Vec3 cameraPos(0.0f, 0.0f, 3.0f);
 
-const char *fragmentShaderSource = "#version 330 core\n"
-	"out vec4 FragColor;\n"
-    "in vec3 ourColor;\n"
-	"void main()\n"
-	"{\n"
-	" FragColor = vec4(ourColor, 1.0f);\n"
-	"}\0";
+enginemath::Vec3 lightColor(1.0f, 1.0f, 1.0f);
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
-float vertices[] = {
-// positions // colors
-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
--0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
-0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f // top
-};
-
-
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int  height) { 
-    glViewport(0, 0, width, height); 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+	glViewport(0, 0, width, height);
 };
 
 void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, true);
+    }
+}
+
+void movementInput(GLFWwindow* window) {
+    const float cameraSpeed = 2.5f * deltaTime;
+    const float cameraRotationSpeed = 45.0f * deltaTime;
+
+    // Movement
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		camera.directionalInput(cameraPos, cameraFront, cameraSpeed);
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		camera.directionalInput(cameraPos, -cameraFront, cameraSpeed);
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		camera.directionalInput(cameraPos, -cameraFront.cross(cameraUp).normalized(), cameraSpeed);
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		camera.directionalInput(cameraPos, cameraFront.cross(cameraUp).normalized(), cameraSpeed);
+	}
+
+	// Camera Angles
+	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {	
+		cameraAngles.x += cameraRotationSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+		cameraAngles.y -= cameraRotationSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+		cameraAngles.x -= cameraRotationSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+		cameraAngles.y += cameraRotationSpeed;
+	}
+
+	camera.angularInput(cameraFront, cameraAngles);
+
+}
+
+Vertex vertices[] = { //pos, normal, colour, texture
+    // Back face
+    { { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
+    { {  0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+    { {  0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f } },
+    { {  0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f } },
+    { { -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } },
+    { { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
+
+    // Front face
+    { { -0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
+    { {  0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+    { {  0.5f,  0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f } },
+    { {  0.5f,  0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f } },
+    { { -0.5f,  0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } },
+    { { -0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
+
+    // Left face
+    { { -0.5f,  0.5f,  0.5f }, { -1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+    { { -0.5f,  0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f } },
+    { { -0.5f, -0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } },
+    { { -0.5f, -0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } },
+    { { -0.5f, -0.5f,  0.5f }, { -1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
+    { { -0.5f,  0.5f,  0.5f }, { -1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+
+    // Right face
+    { {  0.5f,  0.5f,  0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+    { {  0.5f,  0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f } },
+    { {  0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } },
+    { {  0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } },
+    { {  0.5f, -0.5f,  0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
+    { {  0.5f,  0.5f,  0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+
+    // Bottom face
+    { { -0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } },
+    { {  0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f } },
+    { {  0.5f, -0.5f,  0.5f }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+    { {  0.5f, -0.5f,  0.5f }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+    { { -0.5f, -0.5f,  0.5f }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
+    { { -0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } },
+
+    // Top face
+    { { -0.5f,  0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } },
+    { {  0.5f,  0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f } },
+    { {  0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+    { {  0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+    { { -0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
+    { { -0.5f,  0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } },
 };
+
+enginemath::Vec3 cubePositions[] = {
+	enginemath::Vec3(0.0f, 0.0f, 0.0f),
+	enginemath::Vec3(2.0f, 5.0f, -15.0f),
+	enginemath::Vec3(-1.5f, -2.2f, -2.5f),
+	enginemath::Vec3(-3.8f, -2.0f, -12.3f),
+	enginemath::Vec3( 2.4f, -0.4f, -3.5f),
+	enginemath::Vec3(-1.7f, 3.0f, -7.5f),
+	enginemath::Vec3( 1.3f, -2.0f, -2.5f),
+	enginemath::Vec3( 1.5f, 2.0f, -2.5f),
+	enginemath::Vec3( 1.5f, 0.2f, -1.5f),
+	enginemath::Vec3(-1.3f, 1.0f, -1.5f)
+};
+
+enginemath::Vec3 pointLightPositions[] = {
+    enginemath::Vec3( 0.7f, 0.2f, 2.0f),
+    enginemath::Vec3( 2.3f, -3.3f, -4.0f),
+    enginemath::Vec3(-4.0f, 2.0f, -12.0f),
+    enginemath::Vec3( 0.0f, 0.0f, -3.0f)
+};
+
+
 
 int main() {
 
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(500, 500, "OpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Shaders Lighting", NULL, NULL);
     glfwMakeContextCurrent(window);
 
-    // glad
+    //Load Glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cout << "Failed to initalize GLAD" << std::endl;
         return -1;
     }
 
-    glViewport(0, 0, 500, 500);
+    glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    stbi_set_flip_vertically_on_load(true);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    Mesh cube(vertices, 36);
+    Mesh lightSource(vertices, 36);
 
-    //Exercise 1: draw 2 triangles next to each other using glDrawArrays by 
-    // adding more vertices
+    Texture container("textures/container2.png");
+    Texture sees("textures/container2_specular.png");
 
-    unsigned int VBO, VAO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    //VAO
-    glBindVertexArray(VAO);
-
-    //VBO
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    Shader lightingShader("shaders/lightNew.vert", "shaders/lightNew.frag");
+    Shader lightSourceShader("shaders/lightNew.vert", "shaders/lightSource.frag");
 
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) 0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    
-
-	//Vertex Shader object
-	unsigned int vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-	// Fragment Shader Object
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-
-	//Linking the vertex and fragment shaders together
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-    
-
-
-	//Delete shaders
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-    float offset = 0.0f;
-    float direction = 0.0001f;
+    Render renderer;
 
     // Render Loop
     while (!glfwWindowShouldClose(window)) {
-		processInput(window);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(shaderProgram);
-        offset += direction;
-        if (offset > 0.2f || offset < -0.2f)
-            direction = -direction;
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
-        int offsetLocation = glGetUniformLocation(shaderProgram, "horizOffset");
-        glUniform4f(offsetLocation, offset, 0.0f, 0.0f, 0.0f);
+        processInput(window);
+        movementInput(window);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glBindVertexArray(0);
+        // Cube
+        enginemath::Mat4 projectionM = enginemath::Mat4::projectionM(enginemath::toRad(45.0f), 800.0f/600.0f, 0.1f, 100.0f);
+        enginemath::Mat4 viewM = enginemath::Mat4::lookAtM(cameraPos, cameraPos + cameraFront, cameraUp);
 
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+
+        cube.bind();
+        lightingShader.use();
+
+        enginemath::Vec3 lightDir(1.0f, 0.0f, 0.0f);
+
+        container.bind(0);
+        sees.bind(1);
+
+        lightingShader.setInt("material.diffuse", 0);
+        lightingShader.setInt("material.specular", 1);
+
+        lightingShader.setFloat("lights.constant", 1.0f);
+        lightingShader.setFloat("lights.linear", 0.09f);
+        lightingShader.setFloat("lights.quadratic", 0.032f);
+
+        lightingShader.setFloat("material.shininess", 32.0f);
+
+        enginemath::Vec3 ambientLight(0.2f, 0.2f, 0.2f);
+        enginemath::Vec3 diffuseLight(0.5f, 0.5f, 0.5f);
+        enginemath::Vec3 specularLight(1.0f, 1.0f, 1.0f);
+
+        lightingShader.setVec3("dirLight.ambient", ambientLight);
+        lightingShader.setVec3("dirLight.diffuse", diffuseLight);
+        lightingShader.setVec3("dirLight.specular", specularLight);
+        lightingShader.setVec3("dirLight.direction", lightDir);
+
+        for (int i = 0; i < 4; i++) {
+            std::string base = "pointLights[" + std::to_string(i) + "].";
+
+            lightingShader.setVec3((base + "position").c_str(),  pointLightPositions[i]);
+            lightingShader.setVec3((base + "ambient").c_str(),   ambientLight);
+            lightingShader.setVec3((base + "diffuse").c_str(),   diffuseLight);
+            lightingShader.setVec3((base + "specular").c_str(),  specularLight);
+            lightingShader.setFloat((base + "constant").c_str(),  1.0f);
+            lightingShader.setFloat((base + "linear").c_str(),    0.09f);
+            lightingShader.setFloat((base + "quadratic").c_str(), 0.032f);
+        }
+
+        lightingShader.setVec3("spotLight.spotPosition", cameraPos);
+        lightingShader.setVec3("spotLight.spotDirection", cameraFront);
+        lightingShader.setFloat("spotLight.cutOff", cos(enginemath::toRad(12.5f)));
+
+        lightingShader.setVec3("viewPos", cameraPos);
+
+        for (int i = 0; i < 10; i++){
+            enginemath::Mat4 modelM = enginemath::Mat4::translationM(cubePositions[i]);
+            renderer.setPosition(lightingShader, projectionM, viewM, modelM);
+            renderer.draw(cube);
+        }
+
+        lightSource.bind();
+        lightSourceShader.use();
+        lightSourceShader.setVec3("lightColor", lightColor);
+
+        for (int i = 0; i < 4; i++) {
+            enginemath::Mat4 modelMLS = enginemath::Mat4::translationM(pointLightPositions[i]) * enginemath::Mat4::scaleM(0.1f, 0.1f, 0.1f);
+            renderer.setPosition(lightSourceShader, projectionM, viewM, modelMLS);
+            renderer.draw(lightSource);
+        }
+
+        renderer.endFrame(window);
     }
-	
+
     glfwTerminate();
-	return 0;
+    return 0;
 }
-
-

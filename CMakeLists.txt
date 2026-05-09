@@ -15,7 +15,7 @@ add_executable(gameEngine
     libraries/include/texture/texture.cpp
     libraries/include/camera/camera.cpp
     stb_image.cpp
-    main.cpp
+    exercises.cpp
     glad.c
 )
 

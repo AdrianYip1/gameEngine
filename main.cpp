@@ -18,13 +18,11 @@ enginemath::Vec3 cameraFront = enginemath::Vec3(0.0f, 0.0f, -1.0f);
 enginemath::Vec3 cameraUp = enginemath::Vec3(0.0f, 1.0f, 0.0f);
 enginemath::Vec3 cameraAngles(0.0f, -90.0f, 0.0f);
 
-Camera camera;
-
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-float lastX = 400.0f;
-float lastY = 300.0f;
-bool firstMouse = true;
+enginemath::Vec3 lightColour(1.0f, 1.0f, 1.0f);
+
+Camera camera;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -122,13 +120,6 @@ Vertex vertices[] = { //pos, normal, colour, texture
     { { -0.5f,  0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } },
 };
 
-unsigned int indices[] = {
-    0, 1, 3, // first triangle
-    1, 2, 3  // second triangle
-};
-
-
-
 int main() {
 
 	glfwInit();
@@ -160,18 +151,17 @@ int main() {
 
 	Shader lightingShader("shaders/lighting.vert", "shaders/lighting.frag");
 	Shader lightSourceShader("shaders/lighting.vert", "shaders/lightSource.frag");
+
+
+	enginemath::Vec3 colour1(1.0f, 1.0f, 1.0f);
+
 	lightingShader.use();
-	enginemath::Vec3 objColor(1.0f, 0.5f, 0.31f);
-	enginemath::Vec3 lightColor(1.0f, 1.0f, 1.0f);
-	lightingShader.setVec3("objectColor", objColor);
-	lightingShader.setVec3("lightColor", lightColor);
 
 
 	// Texture
-	Texture texture1("textures/container.jpg");
-	Texture texture2("textures/awesomeface.png");
-
-
+	Texture texture1("textures/rubiks_cube_diffuse.jpg");
+	Texture texture2("textures/sees.png");
+	
 
 	enginemath::Vec3 cubePositions[] = {
 		enginemath::Vec3(0.0f, 0.0f, 0.0f),
@@ -188,6 +178,7 @@ int main() {
 
 
 	Render renderer;
+
 	while (!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -195,32 +186,40 @@ int main() {
 
 		processInput(window);
 		movementInput(window);
-
-
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		enginemath::Vec3 lightPos(1.2f * std::sin(enginemath::toRad(glfwGetTime())), 1.0f * std::cos(enginemath::toRad(glfwGetTime())), 3.0f * std::cos(enginemath::toRad(glfwGetTime())));
+		// cube
 
 		enginemath::Mat4 projectionM = enginemath::Mat4::projectionM(enginemath::toRad(30.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 		enginemath::Mat4 viewM = enginemath::Mat4::lookAtM(cameraPos, cameraPos + cameraFront, cameraUp);
 
-		texture1.bind(0);
-		texture2.bind(1);
+		enginemath::Vec3 lightDir(-1.0f, 0.0f, 0.0f);
 
 		cube.bind();
 		lightingShader.use();
-		lightingShader.setVec3("lightPos", lightPos);
+
+		lightingShader.setInt("material.diffuse", 0);
+		lightingShader.setInt("material.specular", 1);
+		lightingShader.setFloat("material.shininess", 32.0f);
+
+		texture1.bind(0);
+		texture2.bind(1);
+
+		lightingShader.setVec3("lights.direction", lightDir);
 		lightingShader.setVec3("viewPos", cameraPos);
 
+		lightingShader.setVec3("lights.ambient",  enginemath::Vec3(0.2f, 0.2f, 0.2f));
+		lightingShader.setVec3("lights.diffuse",  enginemath::Vec3(0.5f, 0.5f, 0.5f));
+		lightingShader.setVec3("lights.specular", enginemath::Vec3(1.0f, 1.0f, 1.0f));
+	
 		enginemath::Mat4 modelM = enginemath::Mat4::translationM(cubePositions[0]);
 		renderer.setPosition(lightingShader, projectionM, viewM, modelM);
 		renderer.draw(cube);
-	
 
-
+		enginemath::Mat4 modelLS = enginemath::Mat4::translationM(lightDir) * enginemath::Mat4::scaleM(0.1f, 0.1f, 0.1f);
 		lightSource.bind();
-		enginemath::Mat4 modelLS = enginemath::Mat4::translationM(lightPos) * enginemath::Mat4::scaleM(0.2f, 0.2f, 0.2f);
 		lightSourceShader.use();
+		lightSourceShader.setVec3("lightColor", lightColour);
 		renderer.setPosition(lightSourceShader, projectionM, viewM, modelLS);
 		renderer.draw(lightSource);
 
