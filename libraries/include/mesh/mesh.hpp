@@ -4,28 +4,24 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "vertex.h"
-
+#include "texture.hpp"
 
 class Mesh {
     public:
-    static_assert(sizeof(Vertex) == 11 * sizeof(float), "Vertex struct has unexpected padding!");
+    //Mesh Data
+    vector<Vertex> vertices;
+    vector<unsigned int> indices;
+    vector<Texture> textures;
 
-        // Constructors
-        Mesh(const Vertex* vertices, size_t countV);
-        Mesh(const Vertex* vertices, const int* indices, size_t countV, size_t countI);
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
 
-        void bind() const;
-
-        // Getters
-        int getVertices() const;
-        int getIndices() const;
-        bool checkElementArray() const;
+    void Draw(Shader &shader);
 
     private:
+    //Render Data
+    unsigned int VAO, VBO, EBO;
 
-        unsigned int VBO, VAO, EBO;
-        unsigned int numVertices, numIndices;
-        bool usesElementArray;
-};
+    void setupMesh();
+}
 
 #endif
