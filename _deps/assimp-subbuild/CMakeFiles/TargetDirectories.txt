@@ -1,0 +1,3 @@
+/home/adria/projects/gameEngine/_deps/assimp-subbuild/CMakeFiles/assimp-populate.dir
+/home/adria/projects/gameEngine/_deps/assimp-subbuild/CMakeFiles/edit_cache.dir
+/home/adria/projects/gameEngine/_deps/assimp-subbuild/CMakeFiles/rebuild_cache.dir

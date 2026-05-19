@@ -3,25 +3,29 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <vector>
+#include <shader/shader.hpp>
 #include "vertex.h"
 #include "texture.hpp"
 
 class Mesh {
     public:
-    //Mesh Data
-    vector<Vertex> vertices;
-    vector<unsigned int> indices;
-    vector<Texture> textures;
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+    std::vector<Texture> textures;
 
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
 
     void Draw(Shader &shader);
+    void bind() const;
+    bool checkElementArray() const;
+    unsigned int getIndices() const;
+    unsigned int getVertices() const;
 
     private:
-    //Render Data
     unsigned int VAO, VBO, EBO;
 
     void setupMesh();
-}
+};
 
 #endif

@@ -2,6 +2,8 @@
 #define MODEL_H
 
 #include <glad/glad.h>
+#include <vector>
+#include <string>
 #include <mesh/mesh.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -9,18 +11,18 @@
 
 class Model {
     public:
-    Model(char *path);
+    Model(const char *path);
     void Draw(Shader &shader);
 
     private:
-    //Model Data
-    vector<Mesh> meshes;
-    string directory;
+    std::vector<Texture> textures_loaded;
+    std::vector<Mesh> meshes;
+    std::string directory;
 
-    void loadModel(string path);
+    void loadModel(std::string path);
     void processNode(aiNode *node, const aiScene* scene);
     Mesh processMesh(aiMesh *mesh, const aiScene* scene);
-    vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
+    std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
 };
 
 #endif

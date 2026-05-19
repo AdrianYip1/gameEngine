@@ -27,8 +27,8 @@ FetchContent_MakeAvailable(assimp)
 add_executable(gameEngine
     libraries/include/shader/shader.cpp
     libraries/include/mesh/mesh.cpp
+    libraries/include/model/model.cpp
     libraries/include/render/render.cpp
-    libraries/include/texture/texture.cpp
     libraries/include/camera/camera.cpp
     stb_image.cpp
     exercises.cpp
@@ -37,6 +37,7 @@ add_executable(gameEngine
 
 file(COPY textures DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY shaders  DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY backpack DESTINATION ${CMAKE_BINARY_DIR})
 
 target_include_directories(gameEngine PRIVATE
     ${CMAKE_SOURCE_DIR}/libraries/include

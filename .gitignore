@@ -19,4 +19,4 @@ CppProperties.json
 .DS_Store
 Thumbs.db
 
-.claude
+.claude_deps/
