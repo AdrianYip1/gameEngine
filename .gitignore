@@ -1,22 +1,22 @@
-# Build directories
-build-*/
+# Build output
 build/
 out/
-x64/
 bin/
-*.log
-*.tlog/
 
-# IDE
+# Visual Studio
 .vs/
-CMakeSettings.json
-CppProperties.json
+*.user
+*.suo
 
-# Libraries - Windows binaries are platform-specific
-# libraries/lib/glfw3.lib
+# CMake
+CMakeCache.txt
+CMakeFiles/
 
-# OS
-.DS_Store
-Thumbs.db
+# Claude Code
+CLAUDE.md
 
-.claude_deps/
+# graphify
+graphify-out/
+
+# Claude Code settings
+.claude/
