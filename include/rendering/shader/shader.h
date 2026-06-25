@@ -42,7 +42,7 @@ public:
 		}
 
 		catch (std::ifstream::failure e) {
-			std::cout << "Error: Shader file(s) not readsuccessfully" << std::endl;
+			std::cout << "Error: Shader file(s) not read successfully" << std::endl;
 		}
 
 		const char* vShaderCode = vertexCode.c_str();

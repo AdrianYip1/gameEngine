@@ -25,3 +25,10 @@ target_link_libraries(gameEngine PRIVATE
 target_include_directories(gameEngine PRIVATE
     external/enginemath/include
 )
+
+# Copy the glsl shaders next to the exe so the relative paths in Shader resolve at runtime
+add_custom_command(TARGET gameEngine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/include/rendering/shader/glslShaderCode
+        $<TARGET_FILE_DIR:gameEngine>
+)

@@ -59,8 +59,8 @@ public:
 	Mesh& operator=(const Mesh&) = delete;
 
 	Mesh(Mesh&& o) noexcept :
-		vertices(std::move(o.vertices)), indices(std::move(o.indices)), textures(std::move(o.textures)),
-		VAO(o.VAO), VBO(o.VBO), EBO(o.EBO) {
+		VAO(o.VAO), VBO(o.VBO), EBO(o.EBO),
+		vertices(std::move(o.vertices)), indices(std::move(o.indices)), textures(std::move(o.textures)) {
 		o.VAO = o.VBO = o.EBO = 0;
 	}
 
@@ -73,10 +73,10 @@ public:
 			indices = std::move(o.indices);
 			textures = std::move(o.textures);
 			VAO = o.VAO; VBO = o.VBO; EBO = o.EBO;   
-			o.VAO = o.VBO = o.EBO = 0;             
+			o.VAO = o.VBO = o.EBO = 0;
 		}
 		return *this;
-	};
+	}
 	
 	void Draw(Shader& shader)
 	{
