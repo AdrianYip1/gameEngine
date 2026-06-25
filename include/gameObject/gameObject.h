@@ -7,7 +7,7 @@
 struct GameObject {
 public:
 	virtual ~GameObject() = default;
-    std::unique_ptr<Mesh>mesh;   
+    std::unique_ptr<Mesh> mesh;   
     std::unique_ptr<Shader> shader;  
     enginemath::Mat4 transform = enginemath::Mat4::identity();
 

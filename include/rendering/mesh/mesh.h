@@ -102,7 +102,7 @@ public:
 		if (checkElementArray()) {
 			glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 		}
-		else glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+		else glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 		glBindVertexArray(0);
 	}
 

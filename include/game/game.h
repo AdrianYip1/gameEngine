@@ -5,6 +5,7 @@
 #include "../gameObject/gameObject.h"
 #include "../scene/scene.h"
 #include "../rendering/renderer/render.h"
+#include "../rendering/texture/texture.h"
 #include <memory>
 #include <vector>
 

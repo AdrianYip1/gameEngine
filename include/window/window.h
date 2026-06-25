@@ -6,7 +6,7 @@
 
 struct Window {
 public:
-	Window(int width, int height, const char* title) {
+	Window(int width, int height, const char* title, bool depth = true) {
 
 		handle = nullptr;
 
@@ -37,6 +37,7 @@ public:
 		});
 
 		glViewport(0, 0, w, h);
+		if (depth) glEnable(GL_DEPTH_TEST); 
 		valid = true;
 	}
 

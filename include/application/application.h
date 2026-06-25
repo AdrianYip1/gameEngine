@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include "../rendering/texture/stb_image.h"
 
 struct Application {
 public:
@@ -49,6 +50,7 @@ public:
 			for (auto& w : windows) {
 				w->makeContextCurrent();
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				stbi_set_flip_vertically_on_load(true);
 				renderInto(w.get());
 				w->swapBuffers();
 			}
