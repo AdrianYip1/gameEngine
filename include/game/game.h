@@ -4,26 +4,29 @@
 #include "../window/window.h"
 #include "../gameObject/gameObject.h"
 #include "../scene/scene.h"
+#include "../rendering/renderer/render.h"
 #include <memory>
 #include <vector>
 
 struct Game : public Application {
 public:
 protected:
+	Render renderer;
 	Scene scene;
 
 	void onInit() override {
-		// the windows for the game
-		windows.push_back(std::make_unique<Window>(640, 480, "game"));
-		scene.add(std::make_unique<Cube>());
+		windows.push_back(std::make_unique<Window>(640, 480, "game")); 
+
+		auto cube = std::make_unique<GameObject>();
+		cube->shader = std::make_unique<Shader>("basic.vert", "basic.frag");
+		cube->mesh = std::make_unique<Mesh>(/* verts, indices, textures */);
+		scene.add(std::move(cube));
 	}
 	void renderInto(Window* w) override {
 		// how the game window(s) get rendered
-		for (auto& obj : scene.objects) {
-			obj->draw();
-		}
+		renderer.draw(scene);
 	}
-
+	
 private:
 
 };

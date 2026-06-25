@@ -5,13 +5,15 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <enginemath/vec2.hpp>
 #include <enginemath/vec3.hpp>
 #include <enginemath/vec4.hpp>
+#include <enginemath/mat4.hpp>
 
 struct Shader {
 public:
 	// Program ID
-	unsigned int ID;
+	unsigned int ID = 0;
 
 	Shader(const char* vertexPath, const char* fragPath) {
 		std::string vertexCode;
@@ -63,8 +65,8 @@ public:
 		}
 
 		// Fragment Shader
-		frag = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(frag, 1, &vShaderCode, NULL);
+		frag = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(frag, 1, &fShaderCode, NULL);
 		glCompileShader(frag);
 
 		glGetShaderiv(frag, GL_COMPILE_STATUS, &success);
@@ -88,10 +90,45 @@ public:
 		glDeleteShader(frag);
 	}
 
+	~Shader() { glDeleteProgram(ID); }
 
-	void use() const {
-		glUseProgram(ID);
+	void use() const { glUseProgram(ID); }
+
+	Shader(const Shader&) = delete;
+	Shader& operator=(const Shader&) = delete;
+
+	Shader(Shader&& other) noexcept : ID(other.ID) {
+		other.ID = 0;
 	}
 
-	void setBool(const std::string& name, bool value);
+	Shader& operator=(Shader&& other) noexcept {
+		if (this != &other) {
+			glDeleteProgram(ID);
+			ID = other.ID;
+			other.ID = 0;
+		}
+		return *this;
+	}
+
+	void setBool(const std::string& name, bool value) {
+		glUniform1i(glGetUniformLocation(ID, name.c_str()), (int) value); }
+
+	void setInt(const std::string& name, int value) {
+		glUniform1i(glGetUniformLocation(ID, name.c_str()), value); }
+	
+	void setFloat(const std::string& name, float value) {
+		glUniform1f(glGetUniformLocation(ID, name.c_str()), value); }
+
+	void setVec2(const std::string& name, enginemath::Vec2 vector) {
+		glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, vector.data); }
+
+	void setVec3(const std::string& name, enginemath::Vec3 vector) {
+		glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, vector.elements); }
+
+	void setVec4(const std::string& name, enginemath::Vec4 vector) {
+		glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, vector.elements); }
+
+	void setMat4(const std::string& name, enginemath::Mat4 matrix) {
+		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, matrix.m[0]); }
+
 };

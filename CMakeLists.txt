@@ -10,7 +10,7 @@ add_executable(gameEngine
     src/main.cpp
     src/glad.c
     src/createApplication.cpp
- "src/glfwHelpers.h" "include/window/window.h" "include/application/application.h" "include/game/game.h" "include/scene/scene.h" "include/rendering/shader/shader.h")
+ "src/glfwHelpers.h" "include/window/window.h" "include/application/application.h" "include/game/game.h" "include/scene/scene.h" "include/rendering/shader/shader.h" "include/rendering/renderer/render.h" "include/rendering/mesh/mesh.h" "include/rendering/mesh/vertex.h" "include/rendering/mesh/textureLayout.h")
 
 target_include_directories(gameEngine PRIVATE
     ${CMAKE_SOURCE_DIR}/include

@@ -6,8 +6,6 @@
 
 class Scene {
 public:
-	void add(std::unique_ptr<GameObject> obj) {
-		objects.push_back(std::move(obj)); }
-
-	std::vector<std::unique_ptr<GameObject>> objects;
+    void add(std::unique_ptr<GameObject> obj) { objects.push_back(std::move(obj)); }
+    std::vector<std::unique_ptr<GameObject>> objects;
 };
