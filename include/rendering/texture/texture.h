@@ -1,12 +1,16 @@
 #pragma once
 
 #include "stb_image.h"
+#include <string>
+#include <iostream>
 
 struct Texture {
-	unsigned int texture;
+	unsigned int texture; // the ID
+    std::string type;
+    std::string path;
 	int w, h, nrChannels;
 public:
-	Texture(const char* path) {
+	Texture(const char* path, std::string _type) {
 		glGenTextures(1, &texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -17,7 +21,6 @@ public:
 
         unsigned char* data = stbi_load(path, &w, &h, &nrChannels, 0);
 
-        unsigned char* data = stbi_load(path, &w, &h, &nrChannels, 0);
         if (data) {
             GLenum format = GL_RGB;
             if (nrChannels == 1) format = GL_RED;
@@ -26,6 +29,7 @@ public:
 
             glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
+            this->type = _type;
         }
         else {
             std::cout << "ERROR loading texture: " << path << std::endl;
@@ -40,7 +44,7 @@ public:
     Texture& operator=(const Texture&) = delete;
 
     Texture(Texture&& o) noexcept :
-        texture(o.texture), w(o.w), h(o.h), nrChannels(o.nrChannels) {
+        texture(o.texture), w(o.w), h(o.h), nrChannels(o.nrChannels), type(std::move(o.type)), path(std::move(o.path)) {
         o.texture = o.w = o.h = o.nrChannels = 0;
     }
 
@@ -51,6 +55,8 @@ public:
             w = o.w;
             h = o.h;
             nrChannels = o.nrChannels;
+            type = std::move(o.type);
+            path = std::move(o.path);
             o.texture = o.w = o.h = o.nrChannels = 0;
         }
         return *this;
