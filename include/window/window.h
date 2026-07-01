@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <input/input.h>
 
 struct Window {
 public:
@@ -39,33 +40,30 @@ public:
 		glViewport(0, 0, w, h);
 		if (depth) glEnable(GL_DEPTH_TEST); 
 		valid = true;
+		input.window = handle;
 	}
 
-	~Window() {
-		glfwDestroyWindow(handle); }
+	~Window() { glfwDestroyWindow(handle); }
 
-	bool shouldClose() {
-		return glfwWindowShouldClose(handle); }
+	bool shouldClose() { return glfwWindowShouldClose(handle); }
 
-	void swapBuffers() {
-		glfwSwapBuffers(handle); }
+	void swapBuffers() { glfwSwapBuffers(handle); }
 
-	int width() const {
-		return w; }
+	int width() const { return w; }
 
-	int height() const {
-		return h; }
+	int height() const { return h; }
 
-	bool isValid() {
-		return valid; }
+	bool isValid() { return valid; }
 
-	void makeContextCurrent() {
-		glfwMakeContextCurrent(handle); }
+	void makeContextCurrent() { glfwMakeContextCurrent(handle); }
+
+	Input& getInput() { return input; }
 
 private:
 	GLFWwindow* handle;
 	int w, h;
 	bool valid = false; // switches to true if window creation has no errors
+	Input input;
 
 	// Window size change
 	void framebuffer_size_callback(int width, int height) {

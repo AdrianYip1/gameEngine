@@ -6,6 +6,10 @@
 #include "../scene/scene.h"
 #include "../rendering/renderer/render.h"
 #include "../rendering/texture/texture.h"
+#include "../camera/camera.h"
+#include "../camera/cameraController.h"
+#include "../input/keybindings.h"
+#include "../input/input.h"
 #include <memory>
 #include <vector>
 
@@ -15,8 +19,19 @@ protected:
 	Render renderer;
 	Scene scene;
 
+	Camera camera;
+	CameraMode current = CameraMode::staticCam;
+	std::unique_ptr<CameraController> controller = std::make_unique<StaticController>();
+	Keybindings<CameraAction> camBinds;
+
 	void onInit() override {
-		windows.push_back(std::make_unique<Window>(640, 480, "game")); 
+		camBinds.bind(CameraAction::moveForward, GLFW_KEY_W);
+		camBinds.bind(CameraAction::moveLeft, GLFW_KEY_A);
+		camBinds.bind(CameraAction::moveRight, GLFW_KEY_D);
+		camBinds.bind(CameraAction::moveBackward, GLFW_KEY_S);
+		controller->setKeybinds(camBinds);
+
+		windows.push_back(std::make_unique<Window>(640, 480, "game"));
 
 		auto cube = std::make_unique<GameObject>();
 		cube->shader = std::make_unique<Shader>("basic.vert", "basic.frag");
@@ -40,9 +55,25 @@ protected:
 	}
 
 	void onUpdate(float dt) override {
-
+		Input& in = windows[0]->getInput();
+		// code for changig camera mode with keybinds
+		if (in.isKeyDown(GLFW_KEY_1)) setCameraMode(CameraMode::staticCam);
+		if (in.isKeyDown(GLFW_KEY_2)) setCameraMode(CameraMode::keyboard);
+		if (in.isKeyDown(GLFW_KEY_3)) setCameraMode(CameraMode::mouse);
+		// update camera view
+		controller->update(camera, in, dt);
 	}
 	
 private:
+	void setCameraMode(CameraMode m) {
+		if (m == current) return;
+		current = m;
+		switch (m) {
+			case CameraMode::staticCam: controller = std::make_unique<StaticController>(); break;
+			case CameraMode::keyboard: controller = std::make_unique<KeyboardController>(); break;
+			case CameraMode::mouse: controller = std::make_unique<MouseController>(); break;
+		}
+		controller->setKeybinds(camBinds);
+	}
 
 };
